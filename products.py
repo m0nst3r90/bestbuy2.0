@@ -69,7 +69,7 @@ class Product:
 
     def show(self):
         """Prints out the product"""
-        print(f"Name: {self.name}, Price: {self.price}, Quantity: {self.quantity}")
+        print(f"Physical Product -> Name: {self.name}, Price: {self.price}, Quantity: {self.quantity}")
 
     def buy(self, quantity) -> float:
         """
@@ -81,10 +81,71 @@ class Product:
         if not self.is_active():
             raise ValueError("Product is not active")
 
+        if quantity > self._quantity:
+            raise ValueError("Quantity is too high")
+
+        self._quantity -= quantity
+        if self._quantity <= 0:
+            self.deactivate()
+        return quantity * self.price
+
+
+class ProductNonStocked(Product):
+    """Product class for limited products"""
+
+    def __init__(self, name, price, quantity, limit):
+        """Initialize the product"""
+        super().__init__(name, price, quantity)
+        self.limit = limit
+
+    @property
+    def limit(self):
+        """Return the limit of the product"""
+        return self._limit
+
+    @limit.setter
+    def limit(self, limit):
+        """Set the limit of the product"""
+        self._limit = limit
+
+    def show(self):
+        """Prints out the product"""
+        print(f"Non Stocked Product -> Name: {self.name}, Price: {self.price}")
+
+    def buy(self, quantity) -> float:
+        """
+        Buy a quantity and return its price
+
+        Raises:
+            ValueError: If the quantity is too low or the product is not active
+            ValueError: If the Limit is reached
+        """
+        if not self.is_active():
+            raise ValueError("Product is not active")
+
         if quantity > self.quantity:
             raise ValueError("Quantity is too high")
 
-        self.quantity -= quantity
-        if self.quantity <= 0:
+        if quantity > self._limit:
+            raise ValueError("Limit is reached")
+
+        self._quantity -= quantity
+        if self._quantity <= 0:
             self.deactivate()
         return quantity * self.price
+
+
+
+class ProductDigital(Product):
+    """Product class for digital products"""
+
+    def __init__(self, name, price):
+        """Initialize the product"""
+        super().__init__(name, price, 0)
+        self.activate()
+
+    def show(self):
+        """Prints out the product"""
+        print(f"Digital Product -> Name: {self.name}, Price: {self.price}")
+
+
