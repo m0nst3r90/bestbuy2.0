@@ -57,7 +57,6 @@ def show_total_amount_menu(menu_store):
     input(f"\nPress enter to go {GREEN}back{RESET}")
 
 
-
 def order_main_menu(menu_store, order,total_order_cost):
     """Handles the order main menu"""
 
@@ -77,7 +76,6 @@ def order_main_menu(menu_store, order,total_order_cost):
     print("\nWhen you want to finish order or leave, enter empty text.")
     print(f"Current cart: {BLUE}${total_order_cost}{RESET}")
     return input(f"\nWich product {GREEN}#{RESET} do you want? ")
-
 
 
 def handle_product_listing(menu_store, order, choosen_product):
@@ -138,11 +136,9 @@ def order_menu(menu_store):
                     break
 
                 print(f"Order made! Total payment: {BLUE}${menu_store.order(order)}{RESET}")
-                time.sleep(1)
+                input(f"\nPress enter to go {GREEN}back{RESET}")
                 order.clear()
                 break
-
-
 
 
 def start(start_store:store.Store):
@@ -166,9 +162,6 @@ def start(start_store:store.Store):
                 break
         if should_exit:
             break
-
-
-
 
 
 start(best_buy)
