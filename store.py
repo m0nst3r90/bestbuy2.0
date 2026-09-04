@@ -1,8 +1,10 @@
 from products import Product
 
+
 class Store:
     """Store class"""
-    def __init__(self, products:list[Product] = None):
+
+    def __init__(self, products: list[Product] = None):
         """Initialize the store"""
         self.products: list[Product] = products
 
@@ -16,7 +18,7 @@ class Store:
 
     def get_total_quantity(self) -> int:
         """Get the total quantity from all products of the store"""
-        total_quantity:int = 0
+        total_quantity: int = 0
         for product in self.products:
             total_quantity += product.quantity
         return total_quantity

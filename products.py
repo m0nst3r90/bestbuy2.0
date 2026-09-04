@@ -1,11 +1,16 @@
+from promotions import Promotion
+
+
 class Product:
     """Product class"""
+
     def __init__(self, name, price, quantity):
         """Initialize the product"""
-        self.name:str = name
-        self.price:float = price
-        self.quantity:int = quantity
-        self.active:bool = self.quantity > 0
+        self.name: str = name
+        self.price: float = price
+        self.quantity: int = quantity
+        self.active: bool = self.quantity > 0
+        self._promotion: list[Promotion] = []
 
     @property
     def name(self):
@@ -55,6 +60,17 @@ class Product:
         else:
             raise ValueError("Price is too low")
 
+    def get_promotion(self) -> list[Promotion]:
+        """Return the promotion of the product"""
+        return self._promotion
+
+    def set_promotion(self, promotion: Promotion | list[Promotion]):
+        """Set the promotion of the product"""
+        if not isinstance(promotion, list):
+            promotion = [promotion]
+
+        self._promotion = promotion
+
     def is_active(self):
         """Returns a bool indicating if the product is active"""
         return self.active
@@ -83,60 +99,55 @@ class Product:
 
         if quantity > self._quantity:
             raise ValueError("Quantity is too high")
+        total_price = 0
+        if self._promotion:
+            for promotion in self._promotion:
+                total_price = promotion.apply_promotion(self, quantity)
+        else:
+            total_price = quantity * self.price
 
         self._quantity -= quantity
         if self._quantity <= 0:
             self.deactivate()
-        return quantity * self.price
+        return total_price
 
 
-class ProductNonStocked(Product):
+class LimitedProduct(Product):
     """Product class for limited products"""
 
-    def __init__(self, name, price, quantity, limit):
+    def __init__(self, name, price, quantity, maximum):
         """Initialize the product"""
         super().__init__(name, price, quantity)
-        self.limit = limit
+        self.maximum = maximum
 
     @property
-    def limit(self):
+    def maximum(self):
         """Return the limit of the product"""
-        return self._limit
+        return self._maximum
 
-    @limit.setter
-    def limit(self, limit):
+    @maximum.setter
+    def maximum(self, maximum):
         """Set the limit of the product"""
-        self._limit = limit
+        self._maximum = maximum
 
     def show(self):
         """Prints out the product"""
-        print(f"Non Stocked Product -> Name: {self.name}, Price: {self.price}")
+        print(f"Limited Product -> Name: {self.name}, Price: {self.price}")
 
     def buy(self, quantity) -> float:
         """
         Buy a quantity and return its price
 
         Raises:
-            ValueError: If the quantity is too low or the product is not active
             ValueError: If the Limit is reached
         """
-        if not self.is_active():
-            raise ValueError("Product is not active")
-
-        if quantity > self.quantity:
-            raise ValueError("Quantity is too high")
-
-        if quantity > self._limit:
+        if quantity > self._maximum:
             raise ValueError("Limit is reached")
 
-        self._quantity -= quantity
-        if self._quantity <= 0:
-            self.deactivate()
-        return quantity * self.price
+        return super().buy(quantity)
 
 
-
-class ProductDigital(Product):
+class NonStockedProduct(Product):
     """Product class for digital products"""
 
     def __init__(self, name, price):
@@ -146,6 +157,23 @@ class ProductDigital(Product):
 
     def show(self):
         """Prints out the product"""
-        print(f"Digital Product -> Name: {self.name}, Price: {self.price}")
+        print(f"Non stocked Product -> Name: {self.name}, Price: {self.price}")
 
+    def buy(self, quantity) -> float:
+        """
+        Buy a quantity and return its price
 
+        Raises:
+            ValueError: If the product is not active
+        """
+        if not self.is_active():
+            raise ValueError("Product is not active")
+
+        total_price = 0
+        if self._promotion:
+            for promotion in self._promotion:
+                total_price = promotion.apply_promotion(self, quantity)
+        else:
+            total_price = quantity * self.price
+
+        return total_price

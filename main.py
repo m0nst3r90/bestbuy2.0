@@ -1,5 +1,6 @@
 import os
 import time
+
 import store
 import products
 
@@ -12,10 +13,10 @@ CYAN = '\033[36m'
 RESET = '\033[0m'
 
 # setup initial stock of inventory
-product_list = [ products.Product("MacBook Air M2", price=1450, quantity=100),
-                 products.Product("Bose QuietComfort Earbuds", price=250, quantity=500),
-                 products.Product("Google Pixel 7", price=500, quantity=250)
-               ]
+product_list = [products.Product("MacBook Air M2", price=1450, quantity=100),
+                products.Product("Bose QuietComfort Earbuds", price=250, quantity=500),
+                products.Product("Google Pixel 7", price=500, quantity=250)
+                ]
 best_buy = store.Store(product_list)
 
 
@@ -57,7 +58,7 @@ def show_total_amount_menu(menu_store):
     input(f"\nPress enter to go {GREEN}back{RESET}")
 
 
-def order_main_menu(menu_store, order,total_order_cost):
+def order_main_menu(menu_store, order, total_order_cost):
     """Handles the order main menu"""
 
     os.system("cls" if os.name == "nt" else "clear")
@@ -96,7 +97,7 @@ def handle_product_listing(menu_store, order, choosen_product):
 
 def get_order_amount(order, product) -> int:
     """returns the amount of one specific product in the order"""
-    return sum( amount for order_product, amount in order if order_product == product)
+    return sum(amount for order_product, amount in order if order_product == product)
 
 
 def order_menu(menu_store):
@@ -120,7 +121,7 @@ def order_menu(menu_store):
                 amount_input = int(input(f"\nWhat {CYAN}amount{RESET} do you want? "))
                 if amount_input > 0:
                     total_order_amount = get_order_amount(order, choosen_product)
-                    if  total_order_amount <= choosen_product.get_quantity():
+                    if total_order_amount <= choosen_product.get_quantity():
                         order.append((choosen_product, amount_input))
                         for product, amount in order:
                             total_order_cost += (product.price * amount)
@@ -141,7 +142,7 @@ def order_menu(menu_store):
                 break
 
 
-def start(start_store:store.Store):
+def start(start_store: store.Store):
     """Main application loop"""
 
     while True:
