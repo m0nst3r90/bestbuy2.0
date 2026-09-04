@@ -4,9 +4,15 @@ from products import Product
 class Store:
     """Store class"""
 
-    def __init__(self, products: list[Product] = None):
+    def __init__(self, products: list[Product]):
         """Initialize the store"""
         self.products: list[Product] = products
+
+    def __contains__(self, item):
+        return item in self.products
+
+    def __add__(self, other):
+        return Store(self.products + other.products)
 
     def add_product(self, product: Product):
         """Add a product to the store"""

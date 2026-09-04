@@ -83,9 +83,19 @@ class Product:
         """Deactivate the product"""
         self.active = False
 
-    def show(self):
+    def __str__(self):
         """Prints out the product"""
-        print(f"Physical Product -> Name: {self.name}, Price: {self.price}, Quantity: {self.quantity}")
+        promo_print = ""
+        if self._promotion:
+            promo_print = promo_print.join(f", {self._promotion}")
+        return f"Physical Product -> Name: {self.name}, Price: {self.price}, Quantity: {self.quantity}{promo_print}"
+
+    def __gt__(self, other):
+        return self.price > other.price
+
+    def __lt__(self, other):
+        return self.price < other.price
+
 
     def buy(self, quantity) -> float:
         """
@@ -130,9 +140,11 @@ class LimitedProduct(Product):
         """Set the limit of the product"""
         self._maximum = maximum
 
-    def show(self):
+    def __str__(self):
         """Prints out the product"""
-        print(f"Limited Product -> Name: {self.name}, Price: {self.price}")
+        print(f"Limited Product -> Name: {self.name}, Price: {self.price}, Quantity: {self.quantity}, Maximum: {self._maximum}")
+        if self._promotion:
+            print(f"Promotion: {self._promotion}")
 
     def buy(self, quantity) -> float:
         """
@@ -155,9 +167,11 @@ class NonStockedProduct(Product):
         super().__init__(name, price, 0)
         self.activate()
 
-    def show(self):
+    def __str__(self):
         """Prints out the product"""
-        print(f"Non stocked Product -> Name: {self.name}, Price: {self.price}")
+        print(f"Non stocked Product -> Name: {self.name}, Price: {self.price}, Quantity: Unlimited")
+        if self._promotion:
+            print(f"Promotion: {self._promotion}")
 
     def buy(self, quantity) -> float:
         """

@@ -1,6 +1,7 @@
 import os
 import time
 
+import promotions
 import store
 import products
 

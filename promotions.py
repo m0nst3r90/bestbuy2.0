@@ -13,6 +13,9 @@ class Promotion(ABC):
         """Initialize the promotion"""
         self.name = name
 
+    def __repr__(self):
+        return f"Promotion: {self.name}"
+
     @abstractmethod
     def apply_promotion(self, product: Product, quantity: int) -> float:
         """Calculates the promotion for a product"""
@@ -26,6 +29,9 @@ class PercentDiscount(Promotion):
         """Initialize the promotion with percent"""
         super().__init__(name)
         self.percent = percent
+
+    def __repr__(self):
+        return f"Promotion: {self.name} percent: {self.percent}"
 
     @property
     def percent(self) -> float:
@@ -57,6 +63,7 @@ class SecondHalfPrice(Promotion):
 
 class ThirdOneFree(Promotion):
     """ThirdOneFree class"""
+
 
     def apply_promotion(self, product, quantity) -> float:
         """Calculates the promotion for a product"""
