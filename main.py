@@ -18,6 +18,13 @@ product_list = [products.Product("MacBook Air M2", price=1450, quantity=100),
                 products.Product("Bose QuietComfort Earbuds", price=250, quantity=500),
                 products.Product("Google Pixel 7", price=500, quantity=250)
                 ]
+
+product_list[0].set_promotion(promotions.PercentDiscount("20% OFF", 20))
+product_list[0].set_promotion(promotions.ThirdOneFree("Third one free"))
+product_list[0].set_promotion(promotions.SecondHalfPrice("Second 50% OFF", True))
+
+
+
 best_buy = store.Store(product_list)
 
 
@@ -39,13 +46,7 @@ def list_all_products_menu(menu_store):
 
     os.system("cls" if os.name == "nt" else "clear")
     print(f"{YELLOW}{'All Products':^30}\n{'------------':^30}{RESET}")
-    print(f"{'Name':<28}{'Price':>10}{'Quantity':>10}")
-    for i, product in enumerate(menu_store.get_all_products()):
-        print(
-            f"{i + 1}. {product.name:<26} "
-            f"{BLUE}{'$':>2}{product.price:>6}{RESET}"
-            f"{CYAN}{product.quantity:>10}{RESET}")
-
+    handle_product_listing(menu_store, None, None)
     input(f"\nPress enter to go {GREEN}back{RESET}")
 
 
@@ -64,19 +65,10 @@ def order_main_menu(menu_store, order, total_order_cost):
 
     os.system("cls" if os.name == "nt" else "clear")
     print(f"{YELLOW}{'Order Menu':^30}\n{'----------':^30}{RESET}")
-    for i, product in enumerate(menu_store.get_all_products()):
-        cart_product_amount = 0
-        for order_product, amount in order:
-            if order_product == product:
-                cart_product_amount += amount
-        print(
-            f"{i + 1}. {product.name:<26} "
-            f"{BLUE}{'$':>2}{product.price:>6}{RESET}"
-            f"{CYAN}{product.quantity:>10}{RESET} "
-            f"{RED}{('- ' + str(cart_product_amount)) if cart_product_amount > 0 else ''}{RESET}")
+    handle_product_listing(menu_store, order, total_order_cost)
 
-    print("\nWhen you want to finish order or leave, enter empty text.")
-    print(f"Current cart: {BLUE}${total_order_cost}{RESET}")
+    print(f"\nWhen you want to finish order or leave, press {GREEN}enter{RESET}")
+    print(f"Current cart: {BLUE}${calculate_total_order(order)}{RESET}")
     return input(f"\nWich product {GREEN}#{RESET} do you want? ")
 
 
@@ -85,20 +77,58 @@ def handle_product_listing(menu_store, order, choosen_product):
     for i, product in enumerate(menu_store.get_all_products()):
         cart_product_amount = 0
         is_product_chosen = product == choosen_product
-        for order_product, amount in order:
-            if order_product == product:
-                cart_product_amount += amount
+        if order:
+            for order_product, amount in order:
+                if order_product == product:
+                    cart_product_amount += amount
         print(
             f"{i + 1}. {YELLOW if is_product_chosen else ''}"
             f"{product.name:<26}{RESET if is_product_chosen else ''} "
             f"{BLUE}{'$':>2}{product.price:>6}{RESET}"
             f"{CYAN}{product.quantity:>10}{RESET} "
-            f"{RED}{('- ' + str(cart_product_amount)) if cart_product_amount > 0 else ''}{RESET}")
+            f"{RED}{('- ' + str(cart_product_amount)) if cart_product_amount > 0 else ''}{RESET}"
+            f"{YELLOW}\t{", ".join(str(promotion) for promotion in product.get_active_promotions())}{RESET}")
+
+
+def calculate_total_order(order) -> float:
+    """calculates and returns the total price in the order"""
+    order_sum = 0
+    for product, amount in order:
+        if product.get_active_promotions():
+            for promotion in product.get_active_promotions():
+                order_sum += promotion.apply_promotion(product, amount)
+        else:
+            order_sum += (product.price * amount)
+    return order_sum
+
+
+def handle_cart(order, chosen_product, amount_input):
+    """handles the cart loop"""
+    total_order_amount = get_order_amount(order, chosen_product) + amount_input
+    if 0 <= total_order_amount <= chosen_product.quantity:
+        for i, (product, amount) in enumerate(order):
+            if product == chosen_product:
+                order[i] = (product, total_order_amount)
+                break
+        else:
+            order.append((chosen_product, amount_input))
+        print("Product added to list")
+        time.sleep(1)
+    else:
+        print(f"{RED}Amount not available{RESET}")
+        time.sleep(1)
 
 
 def get_order_amount(order, product) -> int:
     """returns the amount of one specific product in the order"""
     return sum(amount for order_product, amount in order if order_product == product)
+
+
+def handle_payment(active_store, order):
+    """handles the payment"""
+    print(f"Order made! Total payment: {BLUE}${active_store.order(order)}{RESET}")
+    input(f"\nPress enter to go {GREEN}back{RESET}")
+    order.clear()
 
 
 def order_menu(menu_store):
@@ -112,34 +142,24 @@ def order_menu(menu_store):
         try:
             userinput = int(userinput)
             if 0 < userinput < len(menu_store.get_all_products()) + 1:
-                choosen_product = menu_store.get_all_products()[userinput - 1]
+                chosen_product = menu_store.get_all_products()[userinput - 1]
                 os.system("cls" if os.name == "nt" else "clear")
                 print(f"{YELLOW}{'Order Menu':^30}\n{'----------':^30}{RESET}")
 
-                handle_product_listing(menu_store, order, choosen_product)
+                handle_product_listing(menu_store, order, chosen_product)
 
-                print(f"\nChoosen Product: {YELLOW}{choosen_product.name}{RESET}")
+                print(f"\nChoosen Product: {YELLOW}{chosen_product.name}{RESET}")
                 amount_input = int(input(f"\nWhat {CYAN}amount{RESET} do you want? "))
-                if amount_input > 0:
-                    total_order_amount = get_order_amount(order, choosen_product)
-                    if total_order_amount <= choosen_product.get_quantity():
-                        order.append((choosen_product, amount_input))
-                        for product, amount in order:
-                            total_order_cost += (product.price * amount)
-                        print("Product added to list")
-                        time.sleep(1)
-                    else:
-                        print(f"{RED}Amount not available{RESET}")
-                        time.sleep(1)
+
+                if isinstance(amount_input, int):
+                    handle_cart(order, chosen_product, amount_input)
+                    print(order)
 
         except ValueError:
             if userinput == "":
                 if len(order) < 1:
                     break
-
-                print(f"Order made! Total payment: {BLUE}${menu_store.order(order)}{RESET}")
-                input(f"\nPress enter to go {GREEN}back{RESET}")
-                order.clear()
+                handle_payment(menu_store, order)
                 break
 
 

@@ -9,12 +9,16 @@ if TYPE_CHECKING:
 class Promotion(ABC):
     """Promotion class"""
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, active=False):
         """Initialize the promotion"""
         self.name = name
+        self.active = active
 
     def __repr__(self):
         return f"Promotion: {self.name}"
+
+    def __str__(self):
+        return f"{self.name}"
 
     @abstractmethod
     def apply_promotion(self, product: Product, quantity: int) -> float:
@@ -32,6 +36,9 @@ class PercentDiscount(Promotion):
 
     def __repr__(self):
         return f"Promotion: {self.name} percent: {self.percent}"
+
+    def __str__(self):
+        return f"{self.name}"
 
     @property
     def percent(self) -> float:

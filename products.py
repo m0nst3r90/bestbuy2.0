@@ -60,16 +60,35 @@ class Product:
         else:
             raise ValueError("Price is too low")
 
-    def get_promotion(self) -> list[Promotion]:
-        """Return the promotion of the product"""
+    def get_active_promotions(self) -> list[Promotion]:
+        """Return the active promotions of the product"""
+        return [promotion for promotion in self._promotion if promotion.active]
+
+    def get_all_promotions(self) -> list[Promotion]:
+        """Returns all promotion of the product"""
         return self._promotion
 
-    def set_promotion(self, promotion: Promotion | list[Promotion]):
+    def set_promotion(self, promotion: Promotion):
         """Set the promotion of the product"""
-        if not isinstance(promotion, list):
-            promotion = [promotion]
+        if promotion.active:
+            for existing_promotion in self._promotion:
+                existing_promotion.active = False
+        self._promotion.append(promotion)
 
-        self._promotion = promotion
+    def remove_promotion(self, promotion: Promotion):
+        """Remove the promotion of the product"""
+        if promotion in self._promotion:
+            self._promotion.remove(promotion)
+
+    def activate_promotion(self, promotion: Promotion):
+        """activates one promotion and deactivates all other promotions"""
+        if promotion not in self._promotion:
+            raise ValueError("Promotion is not assigned to this product")
+
+        for existing_promotion in self._promotion:
+            existing_promotion.active = False
+
+        promotion.active = True
 
     def is_active(self):
         """Returns a bool indicating if the product is active"""
@@ -85,9 +104,9 @@ class Product:
 
     def __str__(self):
         """Prints out the product"""
-        promo_print = ""
-        if self._promotion:
-            promo_print = promo_print.join(f", {self._promotion}")
+        promo_print = ", ".join(str(promotion) for promotion in self._promotion)
+        if promo_print:
+            promo_print = f", {promo_print}"
         return f"Physical Product -> Name: {self.name}, Price: {self.price}, Quantity: {self.quantity}{promo_print}"
 
     def __gt__(self, other):
@@ -107,8 +126,11 @@ class Product:
         if not self.is_active():
             raise ValueError("Product is not active")
 
-        if quantity > self._quantity:
+        if quantity > self.quantity:
             raise ValueError("Quantity is too high")
+        if quantity <= 0:
+            raise ValueError("Quantity must be greater than 0")
+
         total_price = 0
         if self._promotion:
             for promotion in self._promotion:
@@ -116,8 +138,8 @@ class Product:
         else:
             total_price = quantity * self.price
 
-        self._quantity -= quantity
-        if self._quantity <= 0:
+        self.quantity -= quantity
+        if self.quantity <= 0:
             self.deactivate()
         return total_price
 
@@ -142,9 +164,11 @@ class LimitedProduct(Product):
 
     def __str__(self):
         """Prints out the product"""
-        print(f"Limited Product -> Name: {self.name}, Price: {self.price}, Quantity: {self.quantity}, Maximum: {self._maximum}")
+        product_print = f"Limited Product -> Name: {self.name}, Price: {self.price}, Quantity: {self.quantity}, Maximum: {self._maximum}"
         if self._promotion:
-            print(f"Promotion: {self._promotion}")
+            product_print.join(f"Promotion: {self._promotion}")
+        return product_print
+
 
     def buy(self, quantity) -> float:
         """
@@ -169,9 +193,11 @@ class NonStockedProduct(Product):
 
     def __str__(self):
         """Prints out the product"""
-        print(f"Non stocked Product -> Name: {self.name}, Price: {self.price}, Quantity: Unlimited")
+        product_print = f"Non stocked Product -> Name: {self.name}, Price: {self.price}, Quantity: Unlimited"
         if self._promotion:
-            print(f"Promotion: {self._promotion}")
+            product_print.join(f"Promotion: {self._promotion}")
+        return product_print
+
 
     def buy(self, quantity) -> float:
         """
