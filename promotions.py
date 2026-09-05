@@ -1,10 +1,5 @@
 from abc import ABC, abstractmethod
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from products import Product
-
 
 class Promotion(ABC):
     """Promotion class"""
@@ -21,7 +16,7 @@ class Promotion(ABC):
         return f"{self.name}"
 
     @abstractmethod
-    def apply_promotion(self, product: Product, quantity: int) -> float:
+    def apply_promotion(self, product, quantity: int) -> float:
         """Calculates the promotion for a product"""
         pass
 
